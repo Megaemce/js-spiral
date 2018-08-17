@@ -1,6 +1,5 @@
 "use strict"
-var draw = SVG('drawing').size(650, 500)
-
+var draw = SVG('drawing').size(600, 600)
 function drawCircle(point, rad) {
    // used to determine whether color is passed or not
    if (arguments.length == 2) {
@@ -10,19 +9,17 @@ function drawCircle(point, rad) {
    }
 }
 function drawLine(pointA, pointB) {
-// drawLine can be (pointA, pointB, [color])
-   if (arguments.length <= 3) {
-      if (arguments.length == 2) {
-         draw.path(
-            'M'+`${pointA.x}`+' '+`${pointA.y}`+
-            'L'+`${pointB.x}`+' '+`${pointB.y}`
-         ).stroke({width:0.5, color: 'black'});
-      } else {
-         draw.path(
-            'M'+`${pointA.x}`+' '+`${pointA.y}`+
-            'L'+`${pointB.x}`+' '+`${pointB.y}`
-         ).stroke({width:0.5, color: '#'+`${371+arguments[2]}`, dasharray:2.20});
-      }
+// drawLine can be (pointA, pointB, [color]) or (x1, y1, x2, y2, [color])
+   if (arguments.length == 2) {
+      draw.path(
+      'M'+`${pointA.x}`+' '+`${pointA.y}`+
+      'L'+`${pointB.x}`+' '+`${pointB.y}`
+      ).stroke({width:0.5, color: 'black'});
+   } else {
+      draw.path(
+      'M'+`${pointA.x}`+' '+`${pointA.y}`+
+      'L'+`${pointB.x}`+' '+`${pointB.y}`
+      ).stroke({width:0.5, color: "hsl("+`${80+arguments[2]*4.35}`+", 100%, 45%)", dasharray:2.20});
    }
 }
 function animateLine(pointA, pointB) {
@@ -61,8 +58,22 @@ function circleLineIntersections(rad, circlePoint, pointA, pointB) {
     
     return intersections;
 }
+function centralPoint(pointA, pointB, pointC, pointD) {
+// finding the centeral point between 4 points (line AB and CD)
+   var centralX = (pointA.x + pointB.x + pointC.x + pointD.x)/4
+   var centralY = (pointA.y + pointB.y + pointC.y + pointD.y)/4
+   var point = {x: centralX, y: centralY}
+   return point;
+}
 function lengthBetweenPoints(pointA, pointB) {
    return  Math.sqrt((pointA.x-pointB.x)*(pointA.x-pointB.x)+(pointA.y-pointB.y)*(pointA.y-pointB.y))
+}
+function chooseCloser(pointCentral, pointA, pointB) {
+  if (lengthBetweenPoints(pointCentral, pointA) < lengthBetweenPoints(pointCentral, pointB)) {
+    return pointA;
+  } else { 
+    return pointB;
+  }
 }
 function makeDrawing(techDraw, aX, aY, boxL, boxW, angle, limit) {
    var box = {}
@@ -72,7 +83,7 @@ function makeDrawing(techDraw, aX, aY, boxL, boxW, angle, limit) {
    box.B = {x:aX+boxL, y:aY} 
    box.C = {x:aX+boxL, y:aY+boxW}
    box.D = {x:aX, y:aY+boxW}
-   box.center = {x:boxL/2, y:boxW/2}
+   box.center = centralPoint(box.A, box.B, box.C, box.D)
 
    drawLine(box.A, box.B) // line AB
    drawLine(box.B, box.C) // line BC
@@ -102,36 +113,27 @@ function makeDrawing(techDraw, aX, aY, boxL, boxW, angle, limit) {
    
    for (var i = 0; i<limit; i++) {
 
+     box.center = centralPoint(point[i], point[i+1], point[i+2], point[i+3])
+
      var lineL = lengthBetweenPoints(point[i] ,point[i+1])
      var interPoint = circleLineIntersections(lineL*angle,point[i],point[i],point[i+1])
-     var length1 = lengthBetweenPoints(box.center, interPoint[0])
-     var length2 = lengthBetweenPoints(box.center, interPoint[1])
-       
+     
      if (techDraw) {
         drawCircle(point[i], angle*lineL)
+        drawCircle(interPoint[0], 3, "red")
+        drawCircle(interPoint[1], 3, "blue")
      }
      
-     if (length1 < length2) {
-        point[Object.keys(point).length] = interPoint[0]
-        if (techDraw) {
-           drawCircle(interPoint[0], 2, "blue")
-        }
-     } else {
-        point[Object.keys(point).length] = interPoint[1]
-        if (techDraw) {
-          drawCircle(interPoint[1], 2, "red")
-        }
-     }
+     point[Object.keys(point).length] = chooseCloser(box.center,interPoint[0],interPoint[1])
      drawLine(point[i], point[i+1], i)
    }
 }
-
 makeDrawing(
    0,   // draw technical details boolean
    20,  // starting point x coordinate
-   20,  // starting point y coordinate
-   400, // length
-   400, // width
-   0.2, // reflection length ratio [0-1]
-   25   // number of reflection 
+   33,  // starting point y coordinate
+   350, // length
+   221, // width
+   0.1, // reflection length ratio [0-1]
+   300  // number of reflection 
  );
