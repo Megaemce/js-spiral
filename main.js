@@ -60,16 +60,14 @@ function pointAtLength(angle, pointA, pointB) {
             x: aX,
             y: aY - rad
          }
+         return intersections[0]
       } else {
          intersections[0] = {
             x: aX,
             y: aY + rad
          }
+         return intersections[0]
       }
-      intersections[1] = {
-            x: 0,
-            y: 0
-         }  
    } else {
 
       var a = 1 + funAVal * funAVal;
@@ -118,56 +116,40 @@ function chooseCloser(pointCentral, pointA, pointB) {
       return pointB;
    }
 }
-function makeDrawing(techDraw, aX, aY, boxL, boxW, angle, limit) {
+function makeDrawing(techDraw, aX, aY, angle, limit) {
    var box = {}
    var point = {}
 
-   box.A = {
-      x: 23,
-      y: 12
-   }
-   box.B = {
-      x: 301,
-      y: 1
-   }
-   box.C = {
-      x: 302,
-      y: 280
-   }
-   box.D = {
-      x: 2,
-      y: 330
-   }
+   /*
+   box[0] = {x: 23, y: 12}
+   box[1] = {x: 301, y: 1}
+   box[2] = {x: 302, y: 280}
+   box[3] = {x: 23, y: 330}
+   box[4] = box[0]
+   */
+   // square
+    box[0] = {x: 20, y: 20}
+   box[1] = {x: 400, y: 20}
+   box[2] = {x: 400 , y: 400}
+   box[3] = {x: 20, y: 400}
+   box[4] = box[0] 
 
-   drawLine(box.A, box.B) // line AB
-   drawLine(box.B, box.C) // line BC
-   drawLine(box.C, box.D) // line CD
-   drawLine(box.D, box.A) // line DA
+   drawLine(box[0], box[1]) // line AB
+   drawLine(box[1], box[2]) // line BC
+   drawLine(box[2], box[3]) // line CD
+   drawLine(box[3], box[0]) // line DA
 
-   point[0] = box.A // break starting in point A 
-   point[1] = pointAtLength(angle, box.B, box.C) // break on BC
-   point[2] = pointAtLength(angle, box.C, box.D)
-   point[3] = pointAtLength(angle, box.D, box.A)
-   
-   drawCircle(point[0], 2, "green")
-   drawCircle(point[1], 2, "green")
-   drawCircle(point[2], 2, "green")
-   drawCircle(point[3], 2, "green")
+   point[0] = box[0]                              // break starting in point A 
+   point[1] = pointAtLength(angle, box[1], box[2]) // break on BC
+   point[2] = pointAtLength(angle, box[2], box[3]) // break on CD 
+   point[3] = pointAtLength(angle, box[3], box[0]) // break on DA
 
    if (techDraw) {
-      // circles at the edges
-      drawCircle(box.B, angle * boxL)
-      drawCircle(box.C, angle * boxW)
-      drawCircle(box.D, angle * boxL)
-      // points at the edges
-      drawCircle(box.A, 2, "blue")
-      drawCircle(box.B, 2, "blue")
-      drawCircle(box.C, 2, "blue")
-      drawCircle(box.D, 2, "blue")
-      // points at the breaks
-      drawCircle(point[1], 2, "green")
-      drawCircle(point[2], 2, "green")
-      drawCircle(point[3], 2, "green")
+      for (let i = 0; i < 4; i++){
+         drawCircle(box[i], angle * segmentLength(box[i], box[i+1]))
+         drawCircle(box[i], 2, "blue")
+         drawCircle(point[i], 2, "green")
+      }
    }
 
    for (var i = 0; i < limit; i++) {
@@ -188,9 +170,7 @@ function makeDrawing(techDraw, aX, aY, boxL, boxW, angle, limit) {
 makeDrawing(
    0, // draw technical details boolean
    20, // starting point x coordinate
-   33, // starting point y coordinate
-   350, // length
-   221, // width
-   0.1242, // reflection length ratio [0-1]
-   50 // number of reflection 
+   20, // starting point y coordinate
+   0.021, // reflection length ratio [0-1]
+   800 // number of reflection 
 );
