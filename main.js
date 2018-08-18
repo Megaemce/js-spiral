@@ -86,7 +86,7 @@ function segmentLength(pointA, pointB) {
   return Math.sqrt(Math.pow((pointA.x - pointB.x), 2) + Math.pow((pointA.y - pointB.y), 2))
 }
 function makeDrawing(box, ratio, limit, techDrawBool) {
-  let point = {};
+  let point = [];
 
   point[0] = box[0];                               // break starting in point A 
   point[1] = pointAtLength(ratio, box[1], box[2], techDrawBool); // break on BC
@@ -94,9 +94,7 @@ function makeDrawing(box, ratio, limit, techDrawBool) {
   point[3] = pointAtLength(ratio, box[3], box[0], techDrawBool); // break on DA
 
   for (let i = 0; i < limit; i++) {
-    let interPoint = pointAtLength(ratio, point[i], point[i + 1], techDrawBool);
-   
-    point[Object.keys(point).length] = interPoint;
+    point.push(pointAtLength(ratio, point[i], point[i + 1], techDrawBool));
     drawLine(point[i], point[i + 1], i);
   }
 }
