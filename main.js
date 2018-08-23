@@ -22,19 +22,16 @@ function drawLine(pointA, pointB, optionalColor) {
   } else {
     optionalColor = `hsl(${80+optionalColor*4.35}, 100%, 45%)`
   }
-  
   ctx.beginPath();
   ctx.moveTo(pointA.x, pointA.y);
   ctx.lineTo(pointB.x, pointB.y);
-  //ctx.setLineDash([5,10])
-  //ctx.lineWidth = '0.5';
   ctx.strokeStyle = optionalColor;
   ctx.stroke();
 }
 function animate(points, granular) {
     let waypoints = [];
     let t = 1;
-    // create (100/i) points in between two points
+    // create granular-number of points in between two points
     for (let i = 1; i < points.length; i++) {
         const dx = points[i].x - points[i - 1].x;
         const dy = points[i].y - points[i - 1].y;
@@ -46,11 +43,10 @@ function animate(points, granular) {
                 y: y
             });
         }
-    } // animate the drawing
-    
+    } // animate the drawing    
     setInterval(function() {
       if (t < waypoints.length) {
-        drawLine(waypoints[t - 1], waypoints[t], t)
+        drawLine(waypoints[t - 1], waypoints[t])
         t++;
       }
     }, 1)
@@ -131,10 +127,9 @@ function makeDrawing(box, ratio, limit, techDrawBool) {
   animate(point, Math.round(ratio*100));
 }
 function createBox(event) {
-  if (coords.length < numPoints) {
-    coords.push({x: event.clientX, y: event.clientY});
-    drawCircle({x: event.clientX, y: event.clientY}, 2, 'black');
-  }
+  coords.push({x: event.clientX, y: event.clientY});
+  drawCircle({x: event.clientX, y: event.clientY}, 2, 'black');
+
   if ((coords.length > 1) && (coords.length < numPoints)) {
     drawLine(coords[coords.length - 2], coords[coords.length - 1]);
   }
@@ -146,9 +141,13 @@ function createBox(event) {
     drawLine(coords[numPoints - 1], coords[0]);
     makeDrawing(
 /* list of points taken from user */ coords, 
-/* reflection length ratio [0-1] */  0.15,
-/* number of reflection  [0-inf] */  80,
+/* reflection length ratio [0-1] */  0.075,
+/* number of reflection  [0-inf] */  180,
 /* draw technical details boolean */ 0
-    );   
+    );
+  }
+  if (coords.length >= numPoints) {
+    coords.length = 0;
+    drawFirst = true;
   }
 }
