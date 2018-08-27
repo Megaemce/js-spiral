@@ -6,16 +6,18 @@
 <script>
 let numPoints = 4;
 let coords = [];
-let drawFirst = true;
+let currentBox = [];
 
 const canvas = document.getElementById('tutorial');
 const ctx = canvas.getContext('2d');
+ctx.fillStyle = "#2c2c2c"
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 document.body.addEventListener('click', createBox);
 
 function drawCircle(point, rad, optionalColor) {
   ctx.beginPath();
   ctx.arc(point.x, point.y, rad, 0, 2 * Math.PI);
-  if (rad > 2){ 
+  if (rad > 2) { 
     ctx.strokeStyle = 'black';
     ctx.stroke();
   }
@@ -27,6 +29,8 @@ function drawCircle(point, rad, optionalColor) {
 function drawLine(pointA, pointB, optionalColor) {
   if (arguments.length == 2) {
     optionalColor = 'black';
+  } else {
+    //optionalColor = `hsl(${80+optionalColor*4.35}, 100%, 45%)`
   }
   ctx.beginPath();
   ctx.moveTo(pointA.x, pointA.y);
@@ -49,12 +53,12 @@ function animate(points, granular) {
                 x: x,
                 y: y
             });
-            colors.push(`rgb(${Math.floor(points[i].x)}, ${Math.floor(points[i].y)} , 0)`)
+            colors.push(`hsl(${points[i].x}, 100%, 45%)`)
         }
     } // animate the drawing    
     setInterval(function() {
       if (t < waypoints.length) {
-        drawLine(waypoints[t - 1], waypoints[t], colors[t])
+        drawLine(waypoints[t - 1], waypoints[t], colors[t-1])
         t++;
       }
     }, 1)
@@ -135,27 +139,39 @@ function makeDrawing(box, ratio, limit, techDrawBool) {
   animate(point, Math.round(ratio*100));
 }
 function createBox(event) {
-  coords.push({x: event.clientX, y: event.clientY});
-  drawCircle({x: event.clientX, y: event.clientY}, 2, 'hsl(82, 100%, 45%)');
-  if ((coords.length > 1) && (coords.length < numPoints)) {
-    drawLine(coords[coords.length - 2], coords[coords.length - 1], `rgb(${Math.floor(event.clientX)}, ${Math.floor(event.clientY)} , 0)`);
-  }
-  if ((coords.length == numPoints) && drawFirst) {
-    drawFirst = false;
-   for (let i = 2; i < numPoints - 1; i++) {
-      drawLine(coords[i], coords[i + 1], `rgb(${Math.floor(event.clientX)}, ${Math.floor(event.clientY)} , 0)`);
+  const userPoint = {x: event.clientX, y: event.clientY};
+  // get point close to eachother and treat it as one
+  let bool = false; // have we added new stuff into array?
+  for (let point of coords) {
+    if (segmentLength(point, userPoint) < 20) {
+      coords.push(point);
+      currentBox.push(point);
+      drawCircle(point, 2, `hsl(${point}, 100%, 45%)`)
+      bool = true; 
+      break;
     }
-    drawLine(coords[numPoints - 1], coords[0], `rgb(${Math.floor(event.clientX)}, ${Math.floor(event.clientY)} , 0)`);
-    makeDrawing(
-/* list of points taken from user */ coords, 
-/* reflection length ratio [0-1] */  0.115,
-/* number of reflection  [0-inf] */  180,
-/* draw technical details boolean */ 0
-    );
   }
-  if (coords.length >= numPoints) {
-    coords.length = 0;
-    drawFirst = true;
+  if (bool == false) {
+    coords.push(userPoint);
+    currentBox.push(userPoint);
+    drawCircle(userPoint, 1, `hsl(${userPoint.x}, 100%, 45%)`); 
+  }
+   
+  if ((currentBox.length > 1) && (currentBox.length < numPoints)) {
+    drawLine(coords[coords.length - 2], coords[coords.length - 1], `hsl(${userPoint.x}, 100%, 45%)`);
+  }
+  if ((currentBox.length  == numPoints) ) {
+    for (let i = 2; i < numPoints - 1; i++) {
+      drawLine(currentBox[i], currentBox[i + 1], `hsl(${currentBox[i].x}, 100%, 45%)`);
+    }
+    drawLine(currentBox[numPoints - 1], currentBox[0], `hsl(${currentBox[0].x}, 100%, 45%)`);
+    makeDrawing(
+/* list of points taken from user */ currentBox, 
+/* reflection length ratio [0-1] */  0.055,
+/* number of reflection  [0-inf] */  340,
+/* draw technical details boolean */ 0
+    ); 
+    currentBox.length = 0;
   }
 }
 </script>
